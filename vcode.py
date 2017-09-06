@@ -15,6 +15,8 @@ PASSWORD='Hyj123456'
 
 retrycount=0
 
+totalcount=0
+
 #二值化
 threshold = 140
 table = []
@@ -26,10 +28,10 @@ def initTable():
         else:
             table.append(1)
 
-def loadVcode():
+def loadVcode(path):
     url = 'http://elite.nju.edu.cn/jiaowu/ValidateCode.jsp'
     data = s.get(url).content
-    open(PATH, 'wb').write(data)
+    open(path, 'wb').write(data)
 
 def twrify(name, save):
     #打开图片
@@ -44,10 +46,10 @@ def twrify(name, save):
     out = out.crop(region)
     out.save(save)
 
-def getVcode():
-    loadVcode()
+def getVcode(language):
+    loadVcode(PATH)
     twrify(PATH, PATH2)
-    s=pytesser3.image_file_to_string(PATH2)
+    s=pytesser3.image_file_to_string(PATH2, language=language)
     num=4
     result=''
     for c in s:
@@ -60,29 +62,48 @@ def getVcode():
             num-=1
     return result
 
-def login(name, password):
-    vcode=getVcode()
-    loginurl='http://elite.nju.edu.cn/jiaowu/login.do'
-    postData = {'userName': name,
-                'password': password,
-                'returnUrl': 'null',
-                'ValidateCode': vcode
-                }
-    po=s.post(loginurl,data=postData).content
-    upo=po.decode('utf-8')
-    erlist = re.compile('验证码错误')
-    ernum = re.findall(erlist, upo)
-    if len(ernum)!=0:
-        print('验证码错误。将重试。')
+def login(name, password, language):
+    try:
+        vcode=getVcode(language)
+        loginurl='http://elite.nju.edu.cn/jiaowu/login.do'
+        postData = {'userName': name,
+                    'password': password,
+                    'returnUrl': 'null',
+                    'ValidateCode': vcode
+                    }
+        po=s.post(loginurl,data=postData).content
+        upo=po.decode('utf-8')
+        erlist = re.compile('验证码错误')
+        ernum = re.findall(erlist, upo)
+        if len(ernum)!=0:
+            print('验证码错误。将重试。')
+            global retrycount
+            global totalcount
+            retrycount+=1
+            totalcount+=1
+            login(name, password, language)
+        else:
+            global retrycount
+            print('登陆成功。重试'+str(retrycount)+"次。\ncookie:")
+            retrycount = 0
+            print(s.cookies)
+    except:
+        print("未知错误")
         global retrycount
-        retrycount+=1
-        login(name, password)
-    else:
-        global retrycount
-        print('登陆成功。重试'+str(retrycount)+"次。\ncookie:")
-        print(s.cookies)
-        retrycount=0
+        global totalcount
+        retrycount += 1
+        totalcount += 1
+        login(name, password, language)
 
 if __name__=="__main__":
+    '''initTable()
+    for i in range(50,100):
+        path="F:/vcode/"+str(i+1)+".jpg"
+        loadVcode(path)
+        path2="F:/vcode/"+str(i+1)+".tif"
+        twrify(path, path2)'''
     initTable()
-    login(NAME,PASSWORD)
+    for i in range(100):
+        login(NAME,PASSWORD, language='fontyp')
+    global totalcount
+    print(totalcount)

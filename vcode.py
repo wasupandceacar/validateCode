@@ -13,19 +13,23 @@ NAME='151250063'
 
 PASSWORD='Hyj123456'
 
+retrycount=0
+
+#二值化
+threshold = 140
+table = []
+
+def initTable():
+    for i in range(256):
+        if i < threshold:
+            table.append(0)
+        else:
+            table.append(1)
+
 def loadVcode():
     url = 'http://elite.nju.edu.cn/jiaowu/ValidateCode.jsp'
     data = s.get(url).content
-    open('F:/1.jpg', 'wb').write(data)
-
-# 二值化
-threshold = 140
-table = []
-for i in range(256):
-    if i < threshold:
-        table.append(0)
-    else:
-        table.append(1)
+    open(PATH, 'wb').write(data)
 
 def twrify(name, save):
     #打开图片
@@ -65,6 +69,20 @@ def login(name, password):
                 'ValidateCode': vcode
                 }
     po=s.post(loginurl,data=postData).content
-    print(po.decode('utf-8'))
+    upo=po.decode('utf-8')
+    erlist = re.compile('验证码错误')
+    ernum = re.findall(erlist, upo)
+    if len(ernum)!=0:
+        print('验证码错误。将重试。')
+        global retrycount
+        retrycount+=1
+        login(name, password)
+    else:
+        global retrycount
+        print('登陆成功。重试'+str(retrycount)+"次。\ncookie:")
+        print(s.cookies)
+        retrycount=0
 
-login(NAME,PASSWORD)
+if __name__=="__main__":
+    initTable()
+    login(NAME,PASSWORD)

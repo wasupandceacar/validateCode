@@ -96,14 +96,14 @@ def login(name, password, language):
         login(name, password, language)
 
 if __name__=="__main__":
-    '''initTable()
-    for i in range(50,100):
+    initTable()
+    for i in range(125):
         path="F:/vcode/"+str(i+1)+".jpg"
         loadVcode(path)
         path2="F:/vcode/"+str(i+1)+".tif"
-        twrify(path, path2)'''
-    initTable()
+        twrify(path, path2)
+    '''initTable()
     for i in range(100):
         login(NAME,PASSWORD, language='fontyp')
     global totalcount
-    print(totalcount)
+    print(totalcount)'''

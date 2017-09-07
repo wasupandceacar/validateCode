@@ -1,23 +1,28 @@
 import requests
 import re
+import os
 from PIL import Image
 import pytesser3
 
 s = requests.Session()
 
+#验证码临时路径
 PATH='F:/1.jpg'
 
+#验证码二值化临时路径
 PATH2='F:/2.jpg'
 
-NAME='151250063'
+#学号自己填
+NAME=''
 
-PASSWORD='Hyj123456'
+#密码自己填
+PASSWORD=''
 
 retrycount=0
 
 totalcount=0
 
-#二值化
+#二值化用
 threshold = 140
 table = []
 
@@ -34,15 +39,13 @@ def loadVcode(path):
     open(path, 'wb').write(data)
 
 def twrify(name, save):
-    #打开图片
     im = Image.open(name)
     #转化到灰度图
     imgry = im.convert('L')
-    #保存图像
     #二值化，采用阈值分割法，threshold为分割点
     out = imgry.point(table,'1')
     region = (1, 1, 79, 19)
-    # 裁切图片
+    #裁切黑边
     out = out.crop(region)
     out.save(save)
 
@@ -61,6 +64,12 @@ def getVcode(language):
             result+=c
             num-=1
     return result
+
+def deleteVcode():
+    if os.path.exists(PATH):
+        os.remove(PATH)
+    if os.path.exists(PATH2):
+        os.remove(PATH2)
 
 def login(name, password, language):
     try:
@@ -81,29 +90,29 @@ def login(name, password, language):
             global totalcount
             retrycount+=1
             totalcount+=1
+            deleteVcode()
             login(name, password, language)
         else:
             global retrycount
             print('登陆成功。重试'+str(retrycount)+"次。\ncookie:")
             retrycount = 0
+            deleteVcode()
+############# cookie在这，随便用
             print(s.cookies)
+############# cookie在这，随便用
     except:
         print("未知错误")
         global retrycount
         global totalcount
         retrycount += 1
         totalcount += 1
+        deleteVcode()
         login(name, password, language)
 
 if __name__=="__main__":
     initTable()
-    for i in range(125):
-        path="F:/vcode/"+str(i+1)+".jpg"
-        loadVcode(path)
-        path2="F:/vcode/"+str(i+1)+".tif"
-        twrify(path, path2)
-    '''initTable()
-    for i in range(100):
+    for i in range(50):
         login(NAME,PASSWORD, language='fontyp')
     global totalcount
-    print(totalcount)'''
+    print("识别率：")
+    print(100*100/(totalcount+100))

@@ -6,10 +6,10 @@ import pytesser3
 
 s = requests.Session()
 
-#验证码临时路径
+#验证码临时路径，可以自己填
 PATH='F:/1.jpg'
 
-#验证码二值化临时路径
+#验证码二值化临时路径，也可以自己填
 PATH2='F:/2.jpg'
 
 #学号自己填
@@ -85,6 +85,7 @@ def login(name, password, language):
         erlist = re.compile('验证码错误')
         ernum = re.findall(erlist, upo)
         if len(ernum)!=0:
+            #验证码识别出错
             print('验证码错误。将重试。')
             global retrycount
             global totalcount
@@ -97,10 +98,11 @@ def login(name, password, language):
             print('登陆成功。重试'+str(retrycount)+"次。\ncookie:")
             retrycount = 0
             deleteVcode()
-############# cookie在这，随便用
+############# session已经有cookie了，失效前可以随便访问#############
             print(s.cookies)
-############# cookie在这，随便用
+############# session已经有cookie了，失效前可以随便访问#############
     except:
+        #一般是你断网了，或者访问太频繁被教务网封了
         print("未知错误")
         global retrycount
         global totalcount
@@ -110,9 +112,17 @@ def login(name, password, language):
         login(name, password, language)
 
 if __name__=="__main__":
-    initTable()
+    #测试一下识别率
+    '''initTable()
     for i in range(50):
         login(NAME,PASSWORD, language='fontyp')
     global totalcount
     print("识别率：")
-    print(100*100/(totalcount+100))
+    print(100*100/(totalcount+100))'''
+    #登陆并访问个人信息页面
+    initTable()
+    login(NAME, PASSWORD, language='fontyp')
+    infourl = 'http://elite.nju.edu.cn/jiaowu/student/studentinfo/index.do'
+    po = s.post(infourl).content
+    upo = po.decode('utf-8')
+    print(upo)

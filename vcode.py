@@ -3,6 +3,7 @@ import re
 import os
 from PIL import Image
 import pytesser3
+import time
 
 s = requests.Session()
 
@@ -13,14 +14,16 @@ PATH='F:/1.jpg'
 PATH2='F:/2.jpg'
 
 #学号自己填
-NAME=''
+NAME='151250063'
 
 #密码自己填
-PASSWORD=''
+PASSWORD='Hyj123456'
 
 retrycount=0
 
 totalcount=0
+
+classidlist=[78453,78454,78455,78456,78457,78458,78459,78450,78451,78452,78453,78454,78455]
 
 #二值化用
 threshold = 140
@@ -111,6 +114,20 @@ def login(name, password, language):
         deleteVcode()
         login(name, password, language)
 
+def selectLesoon():
+    selecturl="http://elite.nju.edu.cn/jiaowu/student/elective/courseList.do"
+    for classid in classidlist:
+        postData = {'method': 'readRenewCourseSelect',
+                'classid': classid,
+                'type': 1,
+                '_': ''
+                }
+        po = s.post(selecturl, data=postData).content
+        upo = po.decode('utf-8')
+        print(upo)
+        time.sleep(1)
+
+
 if __name__=="__main__":
     #测试一下识别率
     '''initTable()
@@ -122,7 +139,4 @@ if __name__=="__main__":
     #登陆并访问个人信息页面
     initTable()
     login(NAME, PASSWORD, language='fontyp')
-    infourl = 'http://elite.nju.edu.cn/jiaowu/student/studentinfo/index.do'
-    po = s.post(infourl).content
-    upo = po.decode('utf-8')
-    print(upo)
+    selectLesoon()

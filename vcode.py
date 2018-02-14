@@ -14,10 +14,10 @@ PATH='F:/1.jpg'
 PATH2='F:/2.jpg'
 
 #学号自己填
-NAME='151250063'
+NAME=''
 
 #密码自己填
-PASSWORD='Hyj123456'
+PASSWORD=''
 
 retrycount=0
 
